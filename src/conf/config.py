@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int
     POSTGRES_DOMAIN: str
 
-    DATABASE_URL: str
+    DATABASE_URL: str = postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_DOMAIN}:${POSTGRES_PORT}/${POSTGRES_DB}
 
     SECRET_KEY_JWT: str
     ALGORITHM: str
