@@ -3,34 +3,36 @@ version: '3.8'
 services:
   web:
     build: .
-    container_name: my-fastapi-project
+    container_name: fastapi-project-photoshare
     ports:
       - "8000:8000"
     depends_on:
       - redis
       - postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: project
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: qazwsx123
+      POSTGRES_PORT: 5432
       POSTGRES_DOMAIN: postgres
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_DOMAIN}:${POSTGRES_PORT}/${POSTGRES_DB}
-      SECRET_KEY_JWT: ${SECRET_KEY_JWT}
-      ALGORITHM: ${ALGORITHM}
-      MAIL_USERNAME: ${MAIL_USERNAME}
-      MAIL_PASSWORD: ${MAIL_PASSWORD}
-      MAIL_FROM: ${MAIL_FROM}
-      MAIL_PORT: ${MAIL_PORT}
-      MAIL_SERVER: ${MAIL_SERVER}
-      REDIS_DOMAIN: redis
-      REDIS_PORT: ${REDIS_PORT}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      CLOUDINARY_NAME: ${CLOUDINARY_NAME}
-      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
-      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      DATABASE_URL: postgresql+asyncpg://postgres:qazwsx123@postgres:5432/project
+      SECRET_KEY_JWT: secret_key
+      ALGORITHM: HS256
+      MAIL_USERNAME: Erozist@meta.ua
+      MAIL_PASSWORD: Erozist267
+      MAIL_FROM: Erozist@meta.ua
+      MAIL_PORT: 465
+      MAIL_SERVER: smtp.meta.ua
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CLOUDINARY_NAME: dqcdp5sjs
+      CLOUDINARY_API_KEY: 713294667813864
+      CLOUDINARY_API_SECRET: q0XeScz_OvMSSKZ9X6e0YrILv_Q
     volumes:
       - .:/app
+    
+    command: >
+      sh -c "alembic revision --autogenerate -m "Init" && alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000"
 
   redis:
     image: redis:alpine
@@ -43,9 +45,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: project
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: qazwsx123
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
