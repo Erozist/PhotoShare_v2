@@ -27,8 +27,7 @@ class User(Base):
     updated_at: Mapped[date] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
     role: Mapped[Enum] = mapped_column(Enum(Role), default=Role.user, nullable=True)
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=True) 
-    todos: Mapped[list["Todo"]] = relationship("Todo", back_populates="user", lazy="joined", uselist=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=True)
     photos: Mapped[list["Photo"]] = relationship("Photo", back_populates="user", lazy="joined", uselist=True)
     comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="user", lazy="joined", uselist=True)
 
