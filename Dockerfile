@@ -22,8 +22,6 @@ COPY . .
 # Встановлення залежностей з requirements.txt
 RUN pip install -r requirements.txt
 
-# RUN alembic upgrade head
-
 # Виставлення порту
 EXPOSE 8000
 
