@@ -19,9 +19,6 @@ WORKDIR /app
 # Копіювання файлів проекту
 COPY . .
 
-# Копіювання файлу .env
-COPY .env .env
-
 # Встановлення залежностей з requirements.txt
 RUN pip install -r requirements.txt
 
