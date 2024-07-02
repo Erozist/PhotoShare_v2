@@ -46,7 +46,7 @@ def run_migrations_offline():
     script output.
 
     """
-    url = app_config.DATABASE_URL
+    url = os.environ.get("DATABASE_URL")
     context.configure(
         url=url, target_metadata=target_metadata, literal_binds=True, dialect_opts={"paramstyle": "named"}
     )
@@ -68,7 +68,7 @@ def run_migrations_online():
             prefix="sqlalchemy.",
             poolclass=pool.NullPool,
             future=True,
-            url=app_config.DATABASE_URL
+            url=os.environ.get("DATABASE_URL")
         )
     )
 

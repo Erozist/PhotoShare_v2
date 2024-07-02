@@ -1,3 +1,4 @@
+import os
 import pickle
 from datetime import datetime, timedelta, UTC
 from typing import Optional
@@ -11,18 +12,18 @@ from jose import JWTError, jwt
 
 from src.database.db import get_db
 from src.repository import users as repository_users
-from src.conf.config import config
+# from src.conf.config import config
 
 
 class Auth:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    SECRET_KEY = config.SECRET_KEY_JWT
-    ALGORITHM = config.ALGORITHM
+    SECRET_KEY = os.environ.get("SECRET_KEY_JWT")
+    ALGORITHM = os.environ.get("ALGORITHM")
     cache = redis.Redis(
-        host=config.REDIS_DOMAIN,
-        port=config.REDIS_PORT,
+        host=os.environ.get("REDIS_DOMAIN"),
+        port=os.environ.get("REDIS_PORT"),
         db=0,
-        password=config.REDIS_PASSWORD,
+        # password=config.REDIS_PASSWORD,
     )
 
     def verify_password(self, plain_password, hashed_password):
