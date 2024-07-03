@@ -59,6 +59,13 @@ async def update_photo_description(
     :return: The updated photo object
     :doc-author: Trelent
     """
+    photo = await get_photo(photo_id, db)
+    if not photo:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found")
+
+    if photo.user_id != user.id and user.role != Role.admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+    
     updated_photo = await update_photo(photo_id, photo_data, user, db)
     if not updated_photo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found")
