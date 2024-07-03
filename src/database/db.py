@@ -36,7 +36,7 @@ class DatabaseSessionManager:
             await session.close()
 
 
-sessionmanager = DatabaseSessionManager("sqlite+aiosqlite:///./test.db")
+sessionmanager = DatabaseSessionManager(os.environ.get("DATABASE_URL"))
 
 
 async def get_db():

@@ -3,11 +3,11 @@ from pydantic import ConfigDict, EmailStr
 
 
 class Settings(BaseSettings):
-    POSTGRES_DB: str
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_PORT: int
-    POSTGRES_DOMAIN: str
+    # POSTGRES_DB: str
+    # POSTGRES_USER: str
+    # POSTGRES_PASSWORD: str
+    # POSTGRES_PORT: int
+    # POSTGRES_DOMAIN: str
 
     DATABASE_URL: str
 
@@ -20,9 +20,9 @@ class Settings(BaseSettings):
     MAIL_PORT: int
     MAIL_SERVER: str
 
-    REDIS_DOMAIN: str
-    REDIS_PORT: int
-    REDIS_PASSWORD: str | None = None
+    # REDIS_DOMAIN: str
+    # REDIS_PORT: int
+    # REDIS_PASSWORD: str | None = None
 
     CLOUDINARY_NAME: str
     CLOUDINARY_API_KEY: int
