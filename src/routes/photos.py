@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 
 from src.database.db import get_db
-from src.entity.models import User
+from src.entity.models import User, Role
 from src.schemas.photo import PhotoCreate, PhotoUpdate, PhotoResponse2, PhotoBase, PhotoResponse, TransformationParams
 from src.services.auth import auth_service
 from src.services.cloudinary import upload_image, transform_image
@@ -80,6 +80,9 @@ async def delet_photo(
     :return: None
     :doc-author: Trelent
     """
+    if user.role != Role.admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+    
     deleted_photo = await delete_photo(photo_id, user, db)
     if not deleted_photo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found")
@@ -164,6 +167,8 @@ async def remove_tags(photo_id: int,
     :return: The updated photo object with the tags removed
     :doc-author: Trelent
     """
+    if user.role != Role.admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
     logger.debug("Received request to remove tags from photo with ID: %d", photo_id)
     try:
         photo = await remove_tags_from_photo(photo_id, tags, user, db)

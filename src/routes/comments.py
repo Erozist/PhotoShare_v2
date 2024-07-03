@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from src.database.db import get_db
-from src.entity.models import Comment, Photo, User
+from src.entity.models import Comment, Photo, User, Role
 from src.schemas.comment import CommentCreate, CommentUpdate, CommentResponse
 from src.services.auth import auth_service
 
@@ -76,6 +76,8 @@ async def delete_comment(
     user: User = Depends(auth_service.get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    if user.role != Role.admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
     """
     The delete_comment function deletes an existing comment.
 
