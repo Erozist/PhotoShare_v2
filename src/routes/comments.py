@@ -91,6 +91,8 @@ async def delete_comment(
     :return: None
     :doc-author: Trelent
     """
+    if user.role != Role.admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
     try:
         comment = await db.get(Comment, comment_id)
         if not comment or comment.user_id != user.id:

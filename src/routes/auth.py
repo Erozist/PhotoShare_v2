@@ -56,6 +56,8 @@ async def login(body: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = 
     :doc-author: Trelent
     """
     user = await repositories_users.get_user_by_email(body.username, db)
+    if user.is_active is False:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Inactive user")
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email")
     if not user.confirmed:

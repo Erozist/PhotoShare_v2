@@ -1,3 +1,4 @@
+import logging
 from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,9 +7,10 @@ from sqlalchemy.orm import joinedload
 
 from src.database.db import get_db
 from src.entity.models import User, Role
-from src.schemas.user import UserSchema, UserProfileResponse,UserUpdateSchema
+from src.schemas.user import UserSchema, UserProfileResponse, UserUpdateSchema
 
-
+logging.basicConfig(level=logging.WARNING)
+logger = logging.getLogger(__name__)
 
 async def get_user_by_email(email: str, db: AsyncSession):
     """
@@ -110,8 +112,16 @@ async def get_user_by_username(username: str, db: AsyncSession) -> User:
     :return: A user object or None if not found
     :doc-author: Trelent
     """
-    result = await db.execute(select(User).where(User.username == username))
-    return result.scalar()
+    
+    logger.info("Fetching user by username: %s", username)
+    stmt = select(User).filter_by(username=username)
+    result = await db.execute(stmt)
+    user = result.scalars().first()
+    if user:
+        logger.info("User found: %s", user.username)
+    else:
+        logger.warning("User not found: %s", username)
+    return user
 
 
 async def get_user_profile(username: str, db: AsyncSession) -> UserProfileResponse:
@@ -123,9 +133,10 @@ async def get_user_profile(username: str, db: AsyncSession) -> UserProfileRespon
     :return: A UserProfileResponse object or None if the user is not found
     :doc-author: Trelent
     """
-    result = await db.execute(select(User).filter(User.username == username).options(joinedload(User.photos)))
-    user = result.scalar_one_or_none()
+    logger.info("Fetching profile for user: %s", username)
+    user = await get_user_by_username(username, db)
     if user is None:
+        logger.warning("User profile not found: %s", username)
         return None
     photo_count = len(user.photos) if user.photos else 0
     user_profile = UserProfileResponse(
@@ -139,10 +150,10 @@ async def get_user_profile(username: str, db: AsyncSession) -> UserProfileRespon
         role=user.role,
         photo_count=photo_count 
     )
+    logger.info("Profile fetched for user: %s", username)
     return user_profile
 
-
-async def update_own_profile(body: UserUpdateSchema,user: User,db: AsyncSession ):
+async def update_own_profile(body: UserUpdateSchema, user: User, db: AsyncSession):
     """
     The update_own_profile function updates the profile of the currently authenticated user.
     
@@ -152,20 +163,26 @@ async def update_own_profile(body: UserUpdateSchema,user: User,db: AsyncSession 
     :return: A UserProfileResponse object with the updated profile information
     :doc-author: Trelent
     """
-
-    from src.services.auth import auth_service 
-    result = await db.execute(select(User).filter(User.id == user.id).options(joinedload(User.photos)))
-    user = result.scalar_one_or_none()
-    if user is None:
+    logger.info("Updating profile for user: %s", user.username)
+    
+    existing_user = await get_user_by_username(user.username, db)
+    if existing_user is None:
+        logger.warning("User not found for update: %s", user.username)
         return None
-    user.username = body.username
-    if body.password:
-        user.password = auth_service.get_password_hash(body.password)
+    
+    try:
+        if body.username and body.username != user.username:
+            user.username = body.username
+        
+        if body.password:
+            from src.services.auth import auth_service
+            user.password = auth_service.get_password_hash(body.password)
 
-    await db.commit()
-    await db.refresh(user)
-    photo_count = len(user.photos) if user.photos else 0
-    user_profile = UserProfileResponse(
+        await db.commit()
+        await db.refresh(user)
+        
+        photo_count = len(user.photos) if user.photos else 0
+        user_profile = UserProfileResponse(
             id=user.id,
             username=user.username,
             email=user.email,
@@ -176,23 +193,11 @@ async def update_own_profile(body: UserUpdateSchema,user: User,db: AsyncSession 
             role=user.role, 
             photo_count=photo_count 
         )
-    return user_profile
-
-
-async def ban_user(user_id: int, db: AsyncSession) -> dict:
-    """
-    The ban_user function deactivates a user by setting their is_active status to False.
+        
+        logger.info("Profile updated for user: %s", user.username)
+        return user_profile
     
-    :param user_id: int: The ID of the user to be banned
-    :param db: AsyncSession: Pass the database session to the function
-    :return: A dictionary with a message indicating the user has been banned or None if the user is not found
-    :doc-author: Trelent
-    """
-    result = await db.execute(select(User).filter(User.id == user_id))
-    user = result.scalar_one_or_none()
-    if user is None:
+    except Exception as e:
+        logger.error("Error updating profile for user: %s, error: %s", user.username, str(e))
+        await db.rollback()
         return None
-    user.is_active = False
-    await db.commit()
-    await db.refresh(user)
-    return {"message": "User banned successfully"}

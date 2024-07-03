@@ -59,7 +59,7 @@ async def update_avatar(file: UploadFile = File(), user: User = Depends(auth_ser
 
 
 @router.get("/profile/{username}", response_model=UserProfileResponse)
-async def get_user_profile(username: str, db: AsyncSession = Depends(get_db),current_user: User = Depends(auth_service.get_current_user)):
+async def get_user_profile(username: str, db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
     """
     The get_user_profile function retrieves a user's profile based on the username provided.
     
@@ -68,15 +68,15 @@ async def get_user_profile(username: str, db: AsyncSession = Depends(get_db),cur
     :param current_user: User: Get the current user making the request
     :return: A UserProfileResponse object or None if the user is not found
     :doc-author: Trelent
-    """
-    user_profile =  await repositories_users.get_user_profile(username, db)
+    """    
+    user_profile = await repositories_users.get_user_profile(username, db)
     if user_profile is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user_profile
 
 
 @router.put("/profile/me", response_model=UserProfileResponse)
-async def update_own_profile(body: UserUpdateSchema,user: User = Depends(auth_service.get_current_user),db: AsyncSession = Depends(get_db)):
+async def update_own_profile(body: UserUpdateSchema, user: User = Depends(auth_service.get_current_user), db: AsyncSession = Depends(get_db)):
     """
     The update_own_profile function updates the profile of the currently authenticated user.
     
@@ -86,13 +86,13 @@ async def update_own_profile(body: UserUpdateSchema,user: User = Depends(auth_se
     :return: A UserProfileResponse object with the updated profile information
     :doc-author: Trelent
     """
-    user_profile =  await repositories_users.update_own_profile(body,user, db,)
+    user_profile = await repositories_users.update_own_profile(body, user, db)
     if user_profile is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user_profile
 
 
-@router.put("/admin/ban/{user_id}",dependencies=[Depends(access_to_route_all)],response_model=dict)
+@router.put("/admin/ban/{user_id}", dependencies=[Depends(access_to_route_all)], response_model=dict)
 async def ban_user(user_id: int, user: User = Depends(auth_service.get_current_user), db: AsyncSession = Depends(get_db)):
     """
     The ban_user function deactivates a user by setting their is_active status to False.
@@ -103,8 +103,10 @@ async def ban_user(user_id: int, user: User = Depends(auth_service.get_current_u
     :return: A dictionary with a message indicating the user has been banned or None if the user is not found
     :doc-author: Trelent
     """
-    user_in_db =  await repositories_users.ban_user( user_id , db)
-   
+    if user.role != Role.admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+    
+    user_in_db = await repositories_users.ban_user(user_id, db)
     if user_in_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user_in_db
