@@ -20,9 +20,9 @@ class Auth:
     SECRET_KEY = os.environ.get("SECRET_KEY_JWT")
     ALGORITHM = os.environ.get("ALGORITHM")
     cache = redis.Redis(
-        host='redis-15064.c250.eu-central-1-1.ec2.redns.redis-cloud.com',
-        port=15064,
-        password='mIf1EXpzU20WpXv0oNjXczureeMg0ET5')
+        host=os.environ.get("REDIS_DOMAIN"),
+        port=os.environ.get("REDIS_PORT"),
+        password=os.environ.get("REDIS_PASSWORD"),)
 
     def verify_password(self, plain_password, hashed_password):
         """

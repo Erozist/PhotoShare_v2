@@ -19,9 +19,9 @@ from src.conf.config import config
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     r = await redis.Redis(
-        host='redis-15064.c250.eu-central-1-1.ec2.redns.redis-cloud.com',
-        port=15064,
-        password='mIf1EXpzU20WpXv0oNjXczureeMg0ET5')
+        host=os.environ.get("REDIS_DOMAIN"),
+        port=os.environ.get("REDIS_PORT"),
+        password=os.environ.get("REDIS_PASSWORD"),)
     await FastAPILimiter.init(r)
     yield
     await r.close()
